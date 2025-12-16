@@ -1,0 +1,17 @@
+{
+  "name": "restaurant-marketing-ai",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["restaurant", "marketing", "ai", "seo"],
+  "author": "",
+  "license": "ISC",
+  "description": "AI-powered restaurant marketing platform",
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
