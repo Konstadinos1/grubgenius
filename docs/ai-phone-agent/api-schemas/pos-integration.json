@@ -1,0 +1,613 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "QSR Phone Agent POS Integration API",
+    "version": "1.0.0",
+    "description": "Unified API schema for integrating AI Phone Agent with POS systems (Toast, Square, Clover)"
+  },
+  "servers": [
+    {
+      "url": "https://api.yourrestaurant.com/v1",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/menu": {
+      "get": {
+        "summary": "Get current menu with prices and availability",
+        "operationId": "getMenu",
+        "tags": ["Menu"],
+        "responses": {
+          "200": {
+            "description": "Menu retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Menu"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inventory/status": {
+      "get": {
+        "summary": "Get 86'd (out of stock) items",
+        "operationId": "getInventoryStatus",
+        "tags": ["Inventory"],
+        "responses": {
+          "200": {
+            "description": "Inventory status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/lookup": {
+      "get": {
+        "summary": "Lookup customer by phone number",
+        "operationId": "lookupCustomer",
+        "tags": ["Customers"],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "+15551234567"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Submit new order to POS/KDS",
+        "operationId": "createOrder",
+        "tags": ["Orders"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid order data"
+          }
+        }
+      }
+    },
+    "/delivery/zones/validate": {
+      "get": {
+        "summary": "Validate delivery address and get zone info",
+        "operationId": "validateDeliveryAddress",
+        "tags": ["Delivery"],
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postal_code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Address validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryZone"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Menu": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MenuCategory"
+            }
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "MenuCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "pizza"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pizzas"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MenuItem"
+            }
+          }
+        }
+      },
+      "MenuItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "PIZ-LG-PEP"
+          },
+          "name": {
+            "type": "string",
+            "example": "Large Pepperoni Pizza"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemSize"
+            }
+          },
+          "modifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Modifier"
+            }
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["dairy", "gluten"]
+          },
+          "is_86ed": {
+            "type": "boolean",
+            "description": "Out of stock flag"
+          }
+        }
+      },
+      "ItemSize": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "example": "large"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 14.99
+          },
+          "calories": {
+            "type": "integer",
+            "example": 2400
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Modifier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "float"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InventoryStatus": {
+        "type": "object",
+        "properties": {
+          "86ed_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutOfStockItem"
+            }
+          },
+          "low_stock_items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "OutOfStockItem": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": ["out_of_stock", "discontinued", "seasonal"]
+          },
+          "expected_restock": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "suggested_substitute": {
+            "type": "string"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            }
+          },
+          "order_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderHistoryItem"
+            }
+          },
+          "loyalty_points": {
+            "type": "integer"
+          },
+          "lifetime_value": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "is_default": {
+            "type": "boolean"
+          },
+          "delivery_zone": {
+            "type": "string"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "OrderHistoryItem": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "number",
+            "format": "float"
+          },
+          "is_favorite": {
+            "type": "boolean",
+            "description": "Marks 'The Usual' order"
+          }
+        }
+      },
+      "OrderRequest": {
+        "type": "object",
+        "required": ["customer", "fulfillment", "items"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "antigravity_phone_agent"
+          },
+          "call_id": {
+            "type": "string"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/OrderCustomer"
+          },
+          "fulfillment": {
+            "$ref": "#/components/schemas/Fulfillment"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/Pricing"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/Payment"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "OrderCustomer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "Fulfillment": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["pickup", "delivery"]
+          },
+          "address_id": {
+            "type": "string"
+          },
+          "requested_time": {
+            "type": "string"
+          },
+          "delivery_instructions": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "unit_price": {
+            "type": "number",
+            "format": "float"
+          },
+          "modifiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "special_instructions": {
+            "type": "string"
+          }
+        }
+      },
+      "Pricing": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "number",
+            "format": "float"
+          },
+          "tax": {
+            "type": "number",
+            "format": "float"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "format": "float"
+          },
+          "tip": {
+            "type": "number",
+            "format": "float"
+          },
+          "discount": {
+            "type": "number",
+            "format": "float"
+          },
+          "total": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["card_on_file", "cash", "card_on_delivery"]
+          },
+          "payment_intent_id": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "confirmation_code": {
+            "type": "string"
+          },
+          "estimated_ready_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kitchen_received": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DeliveryZone": {
+        "type": "object",
+        "properties": {
+          "is_deliverable": {
+            "type": "boolean"
+          },
+          "zone": {
+            "type": "string"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "format": "float"
+          },
+          "estimated_time_minutes": {
+            "type": "integer"
+          },
+          "minimum_order": {
+            "type": "number",
+            "format": "float"
+          },
+          "free_delivery_threshold": {
+            "type": "number",
+            "format": "float"
+          },
+          "distance_km": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
