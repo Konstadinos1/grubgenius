@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <!-- Optional: Play a brief greeting while connecting -->
+    <Say voice="Polly.Joanna" language="en-US">
+        Thank you for calling Grub Genius. Please hold while we connect you to our AI assistant.
+    </Say>
+
+    <!-- Connect the call to your WebSocket server -->
+    <Connect>
+        <Stream url="wss://your-server.grubgenius.com/media-stream">
+            <!-- Optional: Parameters passed to WebSocket -->
+            <Parameter name="restaurant_id" value="12345" />
+            <Parameter name="department" value="reservations" />
+        </Stream>
+    </Connect>
+
+    <!-- Fallback if WebSocket fails -->
+    <Say voice="Polly.Joanna">
+        We're sorry, but we're experiencing technical difficulties.
+        Please try calling back in a few minutes.
+    </Say>
+</Response>
