@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Bellepros",
+    "slug": "bellepros-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E74C3C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bellepros.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to find nearby Bellepros restaurants and provide delivery services.",
+        "NSCameraUsageDescription": "Allow Bellepros to use your camera to scan QR codes for rewards.",
+        "NSPhotoLibraryUsageDescription": "Allow Bellepros to access your photos to update your profile picture."
+      }
+    },
+    "android": {
+      "package": "com.bellepros.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E74C3C"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
